@@ -8,6 +8,7 @@ import LuggageList from '../components/plan/LuggageList.vue'
 import TodoList from '../components/plan/TodoList.vue'
 import RecordSection from '../components/plan/RecordSection.vue'
 import SummarySection from '../components/plan/SummarySection.vue'
+import ExportPlanModal from '../components/plan/ExportPlanModal.vue'
 
 const store = useTravelStore()
 const route = useRoute()
@@ -15,6 +16,7 @@ const router = useRouter()
 
 const plan = computed(() => store.planById(route.params.id))
 const activeTab = ref('overview')
+const showExport = ref(false)
 
 const tabs = [
   { key: 'overview', label: '概览' },
@@ -51,8 +53,11 @@ function onDelete() {
       </div>
       <div class="head-right">
         <img v-if="plan.photo" :src="plan.photo" class="detail-photo" alt="目的地照片" />
-        <button class="btn btn-ghost btn-sm" @click="router.push(`/plans/${plan.id}/edit`)">编辑</button>
-        <button class="btn btn-danger btn-sm" @click="onDelete">删除</button>
+        <div class="head-actions">
+          <button class="btn btn-primary btn-sm" @click="showExport = true">导出行程单</button>
+          <button class="btn btn-ghost btn-sm" @click="router.push(`/plans/${plan.id}/edit`)">编辑</button>
+          <button class="btn btn-danger btn-sm" @click="onDelete">删除</button>
+        </div>
       </div>
     </div>
 
@@ -125,6 +130,9 @@ function onDelete() {
     <div v-else-if="activeTab === 'summary'" class="card">
       <SummarySection :plan="plan" />
     </div>
+
+    <!-- 导出行程单 -->
+    <ExportPlanModal :show="showExport" :plan="plan" @close="showExport = false" />
   </div>
 
   <div v-else class="card empty">
@@ -162,6 +170,13 @@ function onDelete() {
   flex-direction: column;
   gap: 8px;
   align-items: flex-end;
+}
+
+.head-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .detail-photo {

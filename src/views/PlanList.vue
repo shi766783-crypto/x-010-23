@@ -1,11 +1,15 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTravelStore } from '../stores/travel'
 import { formatDate, formatMoney } from '../utils/format'
 import { planTotalSpend, planPackingRate } from '../services/selectors'
+import ExportPlanModal from '../components/plan/ExportPlanModal.vue'
 
 const store = useTravelStore()
 const router = useRouter()
+
+const exportPlan = ref(null)
 
 function tripTypeClass(type) {
   return { 出国: 'tag-red', 长途: 'tag-orange', 出差: 'tag-blue' }[type] || 'tag-green'
@@ -59,6 +63,7 @@ function onDelete(plan) {
         </div>
         <div class="plan-actions" @click.stop>
           <button class="btn btn-ghost btn-sm" @click="router.push(`/plans/${plan.id}`)">详情</button>
+          <button class="btn btn-ghost btn-sm" @click="exportPlan = plan">导出行程单</button>
           <button class="btn btn-ghost btn-sm" @click="router.push(`/plans/${plan.id}/edit`)">编辑</button>
           <button class="btn btn-danger btn-sm" @click="onDelete(plan)">删除</button>
         </div>
@@ -70,6 +75,8 @@ function onDelete(plan) {
       <p>还没有出行计划</p>
       <button class="btn btn-primary mt-16" @click="router.push('/plans/new')">新建出行计划</button>
     </div>
+
+    <ExportPlanModal :show="!!exportPlan" :plan="exportPlan" @close="exportPlan = null" />
   </div>
 </template>
 
