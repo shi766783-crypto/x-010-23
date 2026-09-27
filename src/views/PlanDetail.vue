@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTravelStore } from '../stores/travel'
 import { formatDate, formatMoney } from '../utils/format'
 import { planTotalSpend, planPackingRate, planTodoProgress } from '../services/selectors'
+import { exportPlanItinerary } from '../services/exporter'
 import LuggageList from '../components/plan/LuggageList.vue'
 import TodoList from '../components/plan/TodoList.vue'
 import RecordSection from '../components/plan/RecordSection.vue'
@@ -30,6 +31,25 @@ function onDelete() {
     router.push('/plans')
   }
 }
+
+// ===== 导出行程单 =====
+const exportTip = ref('')
+const exportOk = ref(false)
+let exportTimer = null
+
+function onExport() {
+  try {
+    exportPlanItinerary(plan.value)
+    exportOk.value = true
+    exportTip.value = '行程单已导出，可在浏览器下载记录中查看'
+  } catch (error) {
+    console.error('[export] 导出行程单失败', error)
+    exportOk.value = false
+    exportTip.value = '导出失败，请稍后重试'
+  }
+  clearTimeout(exportTimer)
+  exportTimer = setTimeout(() => (exportTip.value = ''), 3000)
+}
 </script>
 
 <template>
@@ -51,8 +71,12 @@ function onDelete() {
       </div>
       <div class="head-right">
         <img v-if="plan.photo" :src="plan.photo" class="detail-photo" alt="目的地照片" />
+        <button class="btn btn-primary btn-sm" @click="onExport">导出行程单</button>
         <button class="btn btn-ghost btn-sm" @click="router.push(`/plans/${plan.id}/edit`)">编辑</button>
         <button class="btn btn-danger btn-sm" @click="onDelete">删除</button>
+        <span v-if="exportTip" class="export-tip" :class="exportOk ? 'text-success' : 'text-danger'">
+          {{ exportTip }}
+        </span>
       </div>
     </div>
 
@@ -169,6 +193,10 @@ function onDelete() {
   height: 100px;
   object-fit: cover;
   border-radius: var(--radius-sm);
+}
+
+.export-tip {
+  font-size: 12px;
 }
 
 .tabs {
